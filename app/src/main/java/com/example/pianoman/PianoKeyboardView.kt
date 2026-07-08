@@ -134,12 +134,12 @@ class PianoKeyboardView @JvmOverloads constructor(
             val pressed = activeTouches.containsValue(key)
             canvas.drawRect(key.rect, if (pressed) whiteKeyPressedPaint else whiteKeyPaint)
             canvas.drawRect(key.rect, borderPaint)
-            canvas.drawText(key.label, key.rect.centerX(), key.rect.bottom - dp(12f), labelPaint)
+            canvas.drawText(key.label, key.rect.centerX(), key.rect.bottom - dp(24f), labelPaint)
         }
         for (key in blackKeys) {
             val pressed = activeTouches.containsValue(key)
             canvas.drawRect(key.rect, if (pressed) blackKeyPressedPaint else blackKeyPaint)
-            drawSidewaysLabel(canvas, key, blackKeyLabelPaint, dp(18f))
+            drawSidewaysLabel(canvas, key, blackKeyLabelPaint, dp(30f))
         }
     }
 
