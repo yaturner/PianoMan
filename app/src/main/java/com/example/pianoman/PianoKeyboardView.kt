@@ -34,6 +34,11 @@ class PianoKeyboardView @JvmOverloads constructor(
     private val blackKeys = mutableListOf<Key>()
     private var totalWhiteKeys = 0
 
+    // White keys span the full view height, so labelling them at their own bottom edge puts
+    // the text right where a phone's nav bar/gesture area is most likely to cover it. Instead,
+    // label both key types up near the bottom of the black keys, which stays clear of that area.
+    private var labelY = 0f
+
     // pointerId -> key currently held down, so multiple fingers can each hold a note.
     private val activeTouches = mutableMapOf<Int, Key>()
 
@@ -127,6 +132,7 @@ class PianoKeyboardView @JvmOverloads constructor(
             key.rect.top = 0f
             key.rect.bottom = h * blackKeyHeightRatio
         }
+        labelY = h * blackKeyHeightRatio - dp(24f)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -134,22 +140,21 @@ class PianoKeyboardView @JvmOverloads constructor(
             val pressed = activeTouches.containsValue(key)
             canvas.drawRect(key.rect, if (pressed) whiteKeyPressedPaint else whiteKeyPaint)
             canvas.drawRect(key.rect, borderPaint)
-            canvas.drawText(key.label, key.rect.centerX(), key.rect.bottom - dp(24f), labelPaint)
+            canvas.drawText(key.label, key.rect.centerX(), labelY, labelPaint)
         }
         for (key in blackKeys) {
             val pressed = activeTouches.containsValue(key)
             canvas.drawRect(key.rect, if (pressed) blackKeyPressedPaint else blackKeyPaint)
-            drawSidewaysLabel(canvas, key, blackKeyLabelPaint, dp(30f))
+            drawSidewaysLabel(canvas, key, blackKeyLabelPaint)
         }
     }
 
-    /** Draws a key's label rotated 90 degrees, anchored near the bottom of the key. */
-    private fun drawSidewaysLabel(canvas: Canvas, key: Key, paint: Paint, bottomInset: Float) {
+    /** Draws a key's label rotated 90 degrees, anchored at the shared label line. */
+    private fun drawSidewaysLabel(canvas: Canvas, key: Key, paint: Paint) {
         val cx = key.rect.centerX()
-        val cy = key.rect.bottom - bottomInset
         canvas.save()
-        canvas.rotate(-90f, cx, cy)
-        canvas.drawText(key.label, cx, cy, paint)
+        canvas.rotate(-90f, cx, labelY)
+        canvas.drawText(key.label, cx, labelY, paint)
         canvas.restore()
     }
 
