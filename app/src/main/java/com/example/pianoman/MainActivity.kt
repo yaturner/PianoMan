@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPreferencesDialog() {
         val entries = arrayOf(getString(R.string.instrument), getString(R.string.key_duration))
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.AlertDialogOverlay)
             .setTitle(R.string.preferences)
             .setItems(entries) { _, which ->
                 when (which) {
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         val current = AppPrefs.getInstrument(this)
         val checkedIndex = instruments.indexOf(current).coerceAtLeast(0)
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.AlertDialogOverlay)
             .setTitle(R.string.instrument)
             .setSingleChoiceItems(instruments.toTypedArray(), checkedIndex) { dialog, which ->
                 val selected = instruments[which]
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         val current = AppPrefs.getKeyDurationSeconds(this)
         val checkedIndex = options.indexOf(current).coerceAtLeast(0)
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.AlertDialogOverlay)
             .setTitle(R.string.key_duration)
             .setSingleChoiceItems(labels.toTypedArray(), checkedIndex) { dialog, which ->
                 val selected = options[which]
@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
     private fun showAboutDialog() {
         val versionName = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull()
         val message = getString(R.string.about_message, versionName ?: "")
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.AlertDialogOverlay)
             .setTitle(R.string.about)
             .setMessage(message)
             .setPositiveButton(android.R.string.ok, null)

@@ -1,12 +1,50 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-  <!-- Base application theme. -->
-  <style name="Base.AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+  <!--
+    Deliberately not a DayNight theme: the app's own UI (piano keys, toolbar, background) is
+    hardcoded to fixed colors regardless of system theme, so the only thing a DayNight base
+    would affect is standard widget chrome (the overflow menu, AlertDialogs), and resolving
+    Material3 color attributes against a DayNight parent was producing unreadable dialogs
+    (black text on a black background) on some devices. A single fixed light theme keeps that
+    chrome legible everywhere.
+  -->
+  <style name="Base.AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
     <!-- Customize your theme here. -->
     <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
   </style>
 
   <style name="AppTheme" parent="Base.AppTheme" />
-  
+
+  <!--
+    Explicit light styling for the overflow menu popup and every AlertDialog, so they stay
+    readable regardless of the device's dark/light mode or how it resolves Material3 color
+    attributes for a mixed AppCompat/MaterialComponents/Material3 theme (some devices were
+    rendering black text on a black background instead of honoring ThemeOverlay.AppCompat.Light).
+  -->
+  <style name="PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+    <item name="android:colorBackground">@android:color/white</item>
+    <item name="android:textColorPrimary">@android:color/black</item>
+    <item name="android:textColorSecondary">#454545</item>
+    <item name="colorSurface">@android:color/white</item>
+    <item name="colorOnSurface">@android:color/black</item>
+    <item name="colorControlNormal">@android:color/black</item>
+  </style>
+
+  <!--
+    Same explicit colors as PopupOverlay, but layered on the real alert-dialog overlay (which
+    supplies the floating window chrome, background, and insets) instead of the bare light
+    overlay. AlertDialog.Builder needs a dialog theme, not just a color overlay, or it loses
+    its window background and list items fall back to unreadable colors again.
+  -->
+  <style name="AlertDialogOverlay" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+    <item name="android:colorBackground">@android:color/white</item>
+    <item name="android:textColorPrimary">@android:color/black</item>
+    <item name="android:textColorSecondary">#454545</item>
+    <item name="android:textColorAlertDialogListItem">@android:color/black</item>
+    <item name="colorSurface">@android:color/white</item>
+    <item name="colorOnSurface">@android:color/black</item>
+    <item name="colorControlNormal">@android:color/black</item>
+  </style>
+
     <style name="PianoKey" parent="Widget.MaterialComponents.Button">
         <item name="android:padding">0dp</item>
 

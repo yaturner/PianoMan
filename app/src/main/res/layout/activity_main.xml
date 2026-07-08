@@ -12,7 +12,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="#212121"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        app:popupTheme="@style/PopupOverlay" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
