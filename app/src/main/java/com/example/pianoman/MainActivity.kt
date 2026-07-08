@@ -56,16 +56,20 @@ class MainActivity : AppCompatActivity() {
         val instruments = AppPrefs.listInstruments(this)
         if (instruments.isEmpty()) return
         val current = AppPrefs.getInstrument(this)
-        val checkedIndex = instruments.indexOf(current).coerceAtLeast(0)
+        var selectedIndex = instruments.indexOf(current).coerceAtLeast(0)
 
         AlertDialog.Builder(this, R.style.AlertDialogOverlay)
             .setTitle(R.string.instrument)
-            .setSingleChoiceItems(instruments.toTypedArray(), checkedIndex) { dialog, which ->
-                val selected = instruments[which]
+            .setSingleChoiceItems(instruments.toTypedArray(), selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setPositiveButton(R.string.apply) { dialog, _ ->
+                val selected = instruments[selectedIndex]
                 AppPrefs.setInstrument(this, selected)
                 pianoKeyboard.setInstrument(selected)
                 dialog.dismiss()
             }
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
@@ -73,16 +77,20 @@ class MainActivity : AppCompatActivity() {
         val options = AppPrefs.KEY_DURATION_OPTIONS
         val labels = options.map { seconds -> resources.getQuantityString(R.plurals.seconds, seconds, seconds) }
         val current = AppPrefs.getKeyDurationSeconds(this)
-        val checkedIndex = options.indexOf(current).coerceAtLeast(0)
+        var selectedIndex = options.indexOf(current).coerceAtLeast(0)
 
         AlertDialog.Builder(this, R.style.AlertDialogOverlay)
             .setTitle(R.string.key_duration)
-            .setSingleChoiceItems(labels.toTypedArray(), checkedIndex) { dialog, which ->
-                val selected = options[which]
+            .setSingleChoiceItems(labels.toTypedArray(), selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setPositiveButton(R.string.apply) { dialog, _ ->
+                val selected = options[selectedIndex]
                 AppPrefs.setKeyDurationSeconds(this, selected)
                 pianoKeyboard.setKeyDurationSeconds(selected)
                 dialog.dismiss()
             }
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
