@@ -51,6 +51,12 @@ class PianoKeyboardView @JvmOverloads constructor(
         textSize = dp(11f)
         textAlign = Paint.Align.CENTER
     }
+    // Black keys are too narrow for a horizontal label, so their label is drawn sideways.
+    private val blackKeyLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = dp(10f)
+        textAlign = Paint.Align.CENTER
+    }
 
     init {
         buildKeys()
@@ -128,14 +134,23 @@ class PianoKeyboardView @JvmOverloads constructor(
             val pressed = activeTouches.containsValue(key)
             canvas.drawRect(key.rect, if (pressed) whiteKeyPressedPaint else whiteKeyPaint)
             canvas.drawRect(key.rect, borderPaint)
-            if (key.pitchClass == "C") {
-                canvas.drawText(key.label, key.rect.centerX(), key.rect.bottom - dp(12f), labelPaint)
-            }
+            canvas.drawText(key.label, key.rect.centerX(), key.rect.bottom - dp(12f), labelPaint)
         }
         for (key in blackKeys) {
             val pressed = activeTouches.containsValue(key)
             canvas.drawRect(key.rect, if (pressed) blackKeyPressedPaint else blackKeyPaint)
+            drawSidewaysLabel(canvas, key, blackKeyLabelPaint, dp(18f))
         }
+    }
+
+    /** Draws a key's label rotated 90 degrees, anchored near the bottom of the key. */
+    private fun drawSidewaysLabel(canvas: Canvas, key: Key, paint: Paint, bottomInset: Float) {
+        val cx = key.rect.centerX()
+        val cy = key.rect.bottom - bottomInset
+        canvas.save()
+        canvas.rotate(-90f, cx, cy)
+        canvas.drawText(key.label, cx, cy, paint)
+        canvas.restore()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
