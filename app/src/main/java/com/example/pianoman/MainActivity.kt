@@ -27,20 +27,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_preferences) {
-            showPreferencesDialog()
+            showInstrumentDialog()
             return true
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun showPreferencesDialog() {
-        val entries = arrayOf(getString(R.string.instrument))
-        AlertDialog.Builder(this)
-            .setTitle(R.string.preferences)
-            .setItems(entries) { _, which ->
-                if (which == 0) showInstrumentDialog()
-            }
-            .show()
     }
 
     private fun showInstrumentDialog() {
