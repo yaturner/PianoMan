@@ -7,6 +7,8 @@ import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,6 +18,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         setContentView(R.layout.activity_main)
+        val rootLayout = findViewById<android.view.View>(R.id.rootLayout)
+        val bottomBuffer = (8 * resources.displayMetrics.density).toInt()
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(bars.left, bars.top, bars.right, bars.bottom + bottomBuffer)
+            insets
+        }
         setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
         pianoKeyboard = findViewById(R.id.pianoKeyboard)
     }
