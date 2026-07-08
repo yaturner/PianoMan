@@ -11,36 +11,52 @@ import kotlin.math.abs
 import kotlin.math.pow
 
 /**
- * Plays any of the 88 piano keys using the 1st-violin pizzicato samples bundled under
- * assets/Samples/1st Violins (recorded roughly every minor third), pitch-shifting each
- * one (by resampling) to whichever key doesn't have its own recording. Keys far from a
- * recorded note will sound thinner since they're stretched hardest, but most of the
- * playable range sits within a semitone or two of a real recording.
+ * Plays any of the 88 piano keys using the .wav samples bundled under an instrument's
+ * directory in assets/Samples (e.g. "1st Violins"), pitch-shifting each one (by resampling)
+ * to whichever key doesn't have its own recording. Keys far from a recorded note will sound
+ * thinner since they're stretched hardest, but most of the playable range sits within a
+ * semitone or two of a real recording.
  */
-class PianoSynth(context: Context) {
+class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_INSTRUMENT) {
 
     private val appContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private class RecordedNote(val midi: Int, val sample: PcmSample)
 
-    private val recordedNotes: List<RecordedNote> = loadSamples()
+    // The pitch immediately preceding "-PB" or the ".wav" extension, e.g. "...a#3-PB.wav" or
+    // "...a#3.wav" both yield pitch class "a#" and octave "3".
+    private val noteFileNamePattern = Regex("""-([A-Ga-g]#?)(-?\d+)(?=-|\.wav$)""")
+
+    private var recordedNotes: List<RecordedNote> = emptyList()
     private val resampledCache = HashMap<Int, PcmSample>()
 
-    private fun loadSamples(): List<RecordedNote> {
-        val baseDir = "Samples/1st Violins"
-        // The library only recorded these four pitch classes per octave (a minor third apart).
-        val recordedPitches = listOf(
-            "G" to 3, "A#" to 3,
-            "C#" to 4, "E" to 4, "G" to 4, "A#" to 4,
-            "C#" to 5, "E" to 5, "G" to 5, "A#" to 5,
-            "C#" to 6, "E" to 6, "G" to 6, "A#" to 6
-        )
-        return recordedPitches.map { (pitchClass, octave) ->
-            val fileName = "1st-violins-piz-rr1-${pitchClass.lowercase()}$octave-PB.wav"
-            val sample = WavPcmLoader.loadFromAsset(appContext, "$baseDir/$fileName")
-            RecordedNote(midiNumber(pitchClass, octave), sample)
+    init {
+        setInstrument(instrument)
+    }
+
+    /** Switches to a different instrument's sample pack, reloading its recordings. */
+    fun setInstrument(instrument: String) {
+        recordedNotes = loadSamples(instrument)
+        resampledCache.clear()
+    }
+
+    private fun loadSamples(instrument: String): List<RecordedNote> {
+        val dir = "${InstrumentPrefs.SAMPLES_ROOT}/$instrument"
+        val fileNames = appContext.assets.list(dir) ?: return emptyList()
+        val seenMidi = HashSet<Int>()
+        val notes = mutableListOf<RecordedNote>()
+        for (fileName in fileNames) {
+            if (!fileName.lowercase().endsWith(".wav")) continue
+            val match = noteFileNamePattern.find(fileName) ?: continue
+            val (pitchClass, octaveText) = match.destructured
+            val octave = octaveText.toIntOrNull() ?: continue
+            val midi = midiNumber(pitchClass.uppercase(), octave)
+            if (!seenMidi.add(midi)) continue // keep the first take of a repeated/round-robin note
+            val sample = WavPcmLoader.loadFromAsset(appContext, "$dir/$fileName")
+            notes += RecordedNote(midi, sample)
         }
+        return notes
     }
 
     private fun midiNumber(pitchClass: String, octave: Int): Int {

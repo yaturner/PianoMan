@@ -24,7 +24,7 @@ class PianoKeyboardView @JvmOverloads constructor(
         val label: String get() = "$pitchClass$octave"
     }
 
-    private val synth = PianoSynth(context)
+    private val synth = PianoSynth(context, InstrumentPrefs.getInstrument(context))
 
     private val whiteKeyWidthPx = dp(52f)
     private val blackKeyWidthPx = dp(32f)
@@ -163,6 +163,11 @@ class PianoKeyboardView @JvmOverloads constructor(
             }
         }
         return true
+    }
+
+    /** Switches which instrument's samples are used to play notes going forward. */
+    fun setInstrument(instrument: String) {
+        synth.setInstrument(instrument)
     }
 
     private fun keyAt(x: Float, y: Float): Key? {

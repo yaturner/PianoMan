@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#333333"
-    android:scrollbars="horizontal">
+    android:orientation="vertical"
+    android:background="#333333">
 
-    <com.example.pianoman.PianoKeyboardView
-        android:id="@+id/pianoKeyboard"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#212121"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-</HorizontalScrollView>
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="horizontal">
+
+        <com.example.pianoman.PianoKeyboardView
+            android:id="@+id/pianoKeyboard"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+    </HorizontalScrollView>
+
+</LinearLayout>
