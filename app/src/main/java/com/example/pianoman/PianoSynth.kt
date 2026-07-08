@@ -17,11 +17,7 @@ import kotlin.math.pow
  * thinner since they're stretched hardest, but most of the playable range sits within a
  * semitone or two of a real recording.
  */
-class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_INSTRUMENT) {
-
-    companion object {
-        private const val MAX_PLAYBACK_SECONDS = 2
-    }
+class PianoSynth(context: Context, instrument: String = AppPrefs.DEFAULT_INSTRUMENT) {
 
     private val appContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -34,6 +30,7 @@ class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_
 
     private var recordedNotes: List<RecordedNote> = emptyList()
     private val resampledCache = HashMap<Int, PcmSample>()
+    private var maxPlaybackSeconds = AppPrefs.getKeyDurationSeconds(appContext)
 
     init {
         setInstrument(instrument)
@@ -45,8 +42,13 @@ class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_
         resampledCache.clear()
     }
 
+    /** Changes how long (in seconds) a note plays before being cut off. */
+    fun setMaxPlaybackSeconds(seconds: Int) {
+        maxPlaybackSeconds = seconds
+    }
+
     private fun loadSamples(instrument: String): List<RecordedNote> {
-        val dir = "${InstrumentPrefs.SAMPLES_ROOT}/$instrument"
+        val dir = "${AppPrefs.SAMPLES_ROOT}/$instrument"
         val fileNames = appContext.assets.list(dir) ?: return emptyList()
         val seenMidi = HashSet<Int>()
         val notes = mutableListOf<RecordedNote>()
@@ -78,7 +80,7 @@ class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_
             if (ratio == 1.0) nearest.sample else PcmSample(nearest.sample.sampleRate, resample(nearest.sample.mono, ratio))
         }
 
-        val maxFrames = pcm.sampleRate * MAX_PLAYBACK_SECONDS
+        val maxFrames = pcm.sampleRate * maxPlaybackSeconds
         val frameCount = minOf(pcm.mono.size, maxFrames)
         val truncated = frameCount < pcm.mono.size
         // A sample cut off mid-waveform pops audibly, so taper the last ~15ms out to silence.

@@ -26,37 +26,73 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_preferences) {
-            showPreferencesDialog()
-            return true
+        when (item.itemId) {
+            R.id.action_preferences -> {
+                showPreferencesDialog()
+                return true
+            }
+            R.id.action_about -> {
+                showAboutDialog()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun showPreferencesDialog() {
-        val entries = arrayOf(getString(R.string.instrument))
+        val entries = arrayOf(getString(R.string.instrument), getString(R.string.key_duration))
         AlertDialog.Builder(this)
             .setTitle(R.string.preferences)
             .setItems(entries) { _, which ->
-                if (which == 0) showInstrumentDialog()
+                when (which) {
+                    0 -> showInstrumentDialog()
+                    1 -> showKeyDurationDialog()
+                }
             }
             .show()
     }
 
     private fun showInstrumentDialog() {
-        val instruments = InstrumentPrefs.listInstruments(this)
+        val instruments = AppPrefs.listInstruments(this)
         if (instruments.isEmpty()) return
-        val current = InstrumentPrefs.getInstrument(this)
+        val current = AppPrefs.getInstrument(this)
         val checkedIndex = instruments.indexOf(current).coerceAtLeast(0)
 
         AlertDialog.Builder(this)
             .setTitle(R.string.instrument)
             .setSingleChoiceItems(instruments.toTypedArray(), checkedIndex) { dialog, which ->
                 val selected = instruments[which]
-                InstrumentPrefs.setInstrument(this, selected)
+                AppPrefs.setInstrument(this, selected)
                 pianoKeyboard.setInstrument(selected)
                 dialog.dismiss()
             }
+            .show()
+    }
+
+    private fun showKeyDurationDialog() {
+        val options = AppPrefs.KEY_DURATION_OPTIONS
+        val labels = options.map { seconds -> resources.getQuantityString(R.plurals.seconds, seconds, seconds) }
+        val current = AppPrefs.getKeyDurationSeconds(this)
+        val checkedIndex = options.indexOf(current).coerceAtLeast(0)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.key_duration)
+            .setSingleChoiceItems(labels.toTypedArray(), checkedIndex) { dialog, which ->
+                val selected = options[which]
+                AppPrefs.setKeyDurationSeconds(this, selected)
+                pianoKeyboard.setKeyDurationSeconds(selected)
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun showAboutDialog() {
+        val versionName = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull()
+        val message = getString(R.string.about_message, versionName ?: "")
+        AlertDialog.Builder(this)
+            .setTitle(R.string.about)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 }

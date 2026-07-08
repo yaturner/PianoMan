@@ -2,6 +2,13 @@
 <resources>
     <string name="app_name">PianoMan</string>
     <string name="preferences">Preferences</string>
+    <string name="about">About</string>
     <string name="instrument">Instrument</string>
+    <string name="key_duration">Key Duration</string>
+    <string name="about_message">A scrollable, full 88-key (A0–C8) piano keyboard. Each key pitch-shifts the nearest recorded sample from the selected instrument pack.\n\nVersion %1$s</string>
 
+    <plurals name="seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
 </resources>
