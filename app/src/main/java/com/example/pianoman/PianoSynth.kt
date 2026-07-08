@@ -19,6 +19,10 @@ import kotlin.math.pow
  */
 class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_INSTRUMENT) {
 
+    companion object {
+        private const val MAX_PLAYBACK_SECONDS = 2
+    }
+
     private val appContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -74,9 +78,17 @@ class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_
             if (ratio == 1.0) nearest.sample else PcmSample(nearest.sample.sampleRate, resample(nearest.sample.mono, ratio))
         }
 
-        val bytes = ByteArray(pcm.mono.size * 2)
-        for (i in pcm.mono.indices) {
-            val v = pcm.mono[i].toInt()
+        val maxFrames = pcm.sampleRate * MAX_PLAYBACK_SECONDS
+        val frameCount = minOf(pcm.mono.size, maxFrames)
+        val truncated = frameCount < pcm.mono.size
+        // A sample cut off mid-waveform pops audibly, so taper the last ~15ms out to silence.
+        val fadeFrames = if (truncated) minOf(frameCount, pcm.sampleRate / 65) else 0
+        val fadeStart = frameCount - fadeFrames
+
+        val bytes = ByteArray(frameCount * 2)
+        for (i in 0 until frameCount) {
+            var v = pcm.mono[i].toInt()
+            if (i >= fadeStart) v = (v * (frameCount - i) / fadeFrames)
             bytes[i * 2] = (v and 0xFF).toByte()
             bytes[i * 2 + 1] = ((v shr 8) and 0xFF).toByte()
         }
@@ -99,7 +111,7 @@ class PianoSynth(context: Context, instrument: String = InstrumentPrefs.DEFAULT_
         audioTrack.write(bytes, 0, bytes.size)
         audioTrack.play()
 
-        val durationMs = (pcm.mono.size * 1000L / pcm.sampleRate) + 100L
+        val durationMs = (frameCount * 1000L / pcm.sampleRate) + 100L
         mainHandler.postDelayed({
             runCatching { audioTrack.stop() }
             audioTrack.release()
